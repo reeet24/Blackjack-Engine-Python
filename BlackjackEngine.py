@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 class GameConfig:
     """Configuration settings for the blackjack game."""
     num_decks: int = 6
-    starting_bankroll: int = 1000
+    starting_bankroll: int = 500
     min_bet: int = 5
     max_bet: int = 500
     blackjack_payout: float = 1.5
@@ -201,6 +201,29 @@ class BlackjackGameEngine:
  
         self.dealer_hand = [self.deal_card(), self.deal_card()]
         self.player_hands = [Hand([self.deal_card(), self.deal_card()], bet)]
+        
+        self.stats.hands_played += 1
+        logger.info(f"Round started with bet ${bet}")
+        
+        return self.get_game_state()
+    
+    def start_set_round(self, player_hands: list, dealer_hand: list, bet: int) -> Dict:
+        """Start a new round of blackjack with set hands. Included for testing."""
+        is_valid, error_msg = self.validate_bet(bet)
+        if not is_valid:
+            raise ValueError(error_msg)
+        
+ 
+        self.bankroll -= bet
+        self.stats.total_wagered += bet
+        
+ 
+        self.card_history = []
+        self.round_complete = False
+        
+ 
+        self.dealer_hand = dealer_hand
+        self.player_hands = player_hands
         
         self.stats.hands_played += 1
         logger.info(f"Round started with bet ${bet}")
