@@ -1,5 +1,5 @@
 from mods.base_mod import BlackjackMod
-from mod_loader import register_custom_card, register_custom_action
+from mod_loader import Utilities
 
 class ExampleMod(BlackjackMod):
     name = "Example Mod"
@@ -10,9 +10,9 @@ class ExampleMod(BlackjackMod):
         self.dispatcher.connect('round_started', self.on_round_start)
         self.dispatcher.connect('card_dealt', self.on_card_dealt)
 
-        register_custom_card('-2', value=-2, count_value=1)
+        Utilities.register_custom_card('-2', value=-2, count_value=1)
 
-        register_custom_action('lucky_draw', self.draw_ace, self.can_draw_ace)
+        Utilities.register_custom_action('lucky_draw', self.draw_ace, self.can_draw_ace)
 
         print(f'ExampleMod Loaded!')
 

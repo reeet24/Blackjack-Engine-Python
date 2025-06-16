@@ -7,12 +7,29 @@ patched = False
 active_mods = []
 custom_cards = {}
 custom_actions = {}
+custom_stats = {}
+custom_config = {}
 
 class CustomAction:
     def __init__(self, name: str, handler, validator=None):
         self.name = name
         self.handler = handler
         self.validator = validator or (lambda engine, hand_index: True)
+
+class Utilities:
+    def __init__(self):
+        pass
+
+    def register_custom_card(card: str, value: int, count_value: int = 0):
+        custom_cards[card] = {
+            'value': value,
+            'count_value': count_value
+        }
+        BlackjackEngine.GameConstants.CARD_VALUES[card] = value
+        BlackjackEngine.GameConstants.HI_LO_VALUES[card] = count_value
+
+    def register_custom_action(name: str, handler, validator=None):
+        custom_actions[name] = CustomAction(name, handler, validator)
 
 def patch_engine():
     global patched
@@ -75,16 +92,7 @@ def patch_engine():
 
     patched = True
 
-def register_custom_card(card: str, value: int, count_value: int = 0):
-    custom_cards[card] = {
-        'value': value,
-        'count_value': count_value
-    }
-    BlackjackEngine.GameConstants.CARD_VALUES[card] = value
-    BlackjackEngine.GameConstants.HI_LO_VALUES[card] = count_value
 
-def register_custom_action(name: str, handler, validator=None):
-    custom_actions[name] = CustomAction(name, handler, validator)
 
 def load_mods_from_folder(folder='mods'):
     patch_engine()
@@ -128,7 +136,7 @@ if __name__ == "__main__":
     print(Engine.GameConstants.CARD_VALUES)
 
     config = Engine.GameConfig(
-        num_decks=6,
+        num_decks=1,
         starting_bankroll=1000,
         min_bet=10,
         max_bet=500,
