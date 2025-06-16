@@ -3,7 +3,6 @@ from collections import deque
 from typing import List, Dict, Optional, Tuple
 from dataclasses import dataclass
 import logging
-
  
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -229,6 +228,7 @@ class BlackjackGameEngine:
                 hand.cards.append(self.deal_card())
                 hand.bet *= 2
                 hand.doubled = True
+                hand.finished = True
         
         elif action == 'split':
             if hand.can_split() and self.bankroll >= hand.bet:
@@ -518,6 +518,9 @@ class BlackjackGameController:
  
                                 if action != 'split':
                                     pass  # Continue with same hand until finished
+                                else:
+                                    hand = self.engine.player_hands[self.current_hand_index]
+                                    continue
                             else:
                                 error_prompt = {
                                     'type': 'error',
