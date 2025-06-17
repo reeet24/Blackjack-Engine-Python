@@ -161,6 +161,19 @@ class BlackjackGameEngine:
         self.running_count += GameConstants.HI_LO_VALUES.get(card, 0)
         self.card_history.append(card)
         return card
+    
+    def deal_set_card(self, card: str = "A") -> str:
+        """Deal a single set card and update the running count."""
+        if len(self.deck) < self.config.min_cards_before_shuffle:
+            self.shuffle_deck()
+        
+        if not self.deck:
+            raise RuntimeError("Deck is empty after shuffle")
+        
+        self.deck.remove(card)
+        self.running_count += GameConstants.HI_LO_VALUES.get(card, 0)
+        self.card_history.append(card)
+        return card
 
     def get_true_count(self) -> float:
         """Calculate the true count (running count / decks remaining)."""

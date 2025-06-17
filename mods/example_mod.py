@@ -9,6 +9,7 @@ class ExampleMod(BlackjackMod):
     def register(self):
         self.dispatcher.connect('round_started', self.on_round_start)
         self.dispatcher.connect('card_dealt', self.on_card_dealt)
+        self.dispatcher.connect('deck_shuffled', self.on_deck_shuffle)
 
         Utilities.register_custom_card('-2', value=-2, count_value=1)
 
@@ -34,3 +35,6 @@ class ExampleMod(BlackjackMod):
 
     def on_card_dealt(self, card, engine):
         print(f"ExampleMod: A {card} was dealt!")
+
+    def on_deck_shuffle(self, deck, engine):
+        print(f"ExampleMod: Deck '{deck}' has been shuffled")

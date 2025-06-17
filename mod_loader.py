@@ -2,6 +2,8 @@ import importlib
 import os
 import BlackjackEngine
 from modding import global_dispatcher
+import random
+from collections import deque
 
 patched = False
 active_mods = []
@@ -42,6 +44,7 @@ def patch_engine():
     original_create_deck = BlackjackEngine.create_deck
     original_execute_action = BlackjackEngine.BlackjackGameEngine.execute_action
     original_get_legal_actions = BlackjackEngine.Hand.get_legal_actions
+    original_shuffle_deck = BlackjackEngine.BlackjackGameEngine.shuffle_deck
 
     def patched_start_round(self, bet):
         result = original_start_round(self, bet)
@@ -57,14 +60,18 @@ def patch_engine():
         results = original_resolve_round(self)
         global_dispatcher.emit('round_resolved', results=results, engine=self)
         return results
+    
+    def patched_shuffle_deck(self):
+        original_shuffle_deck(self)
+        global_dispatcher.emit('deck_shuffled', self.deck, engine=self)
 
     def patched_create_deck(num_decks: int):
         base_cards = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
         all_cards = base_cards + list(custom_cards.keys())
         single_deck = all_cards * 4
-        import random
-        from collections import deque
-        return deque(single_deck * num_decks)
+        final_deck = deque(single_deck * num_decks)
+        global_dispatcher.emit('deck_created', results=final_deck)
+        return final_deck
 
     def patched_execute_action(self, hand_index, action):
         if action in custom_actions:
@@ -89,6 +96,7 @@ def patch_engine():
     BlackjackEngine.BlackjackGameEngine.execute_action = patched_execute_action
     BlackjackEngine.create_deck = patched_create_deck
     BlackjackEngine.Hand.get_legal_actions = patched_get_legal_actions
+    BlackjackEngine.BlackjackGameEngine.shuffle_deck = patched_shuffle_deck
 
     patched = True
 
@@ -106,7 +114,7 @@ def load_mods_from_folder(folder='mods'):
                 if isinstance(obj, type) and hasattr(obj, '__bases__') and any('BlackjackMod' in str(base) for base in obj.__bases__):
                     instance = obj()
                     active_mods.append(instance)
-
+ 
     return BlackjackEngine
 
 def get_loaded_mods():
@@ -119,7 +127,7 @@ def get_loaded_mods():
         for mod in active_mods
     ]
 
-def unload_all_mods():
+def unload_all_mods(): 
     for mod in active_mods:
         if hasattr(mod, 'unregister'):
             try:
