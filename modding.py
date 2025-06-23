@@ -30,6 +30,11 @@ class Registry:
         self.custom_stats = {}
         self.custom_config = {}
 
+    def push_registry_to_engine(self, BlackjackEngine):
+        for card, data in self.custom_cards.items():
+            BlackjackEngine.GameConstants.CARD_VALUES[card] = data['value']
+            BlackjackEngine.GameConstants.HI_LO_VALUES[card] = data['count_value']
+
 class SignalDispatcher:
     def __init__(self):
         self._listeners: Dict[str, List[Callable]] = defaultdict(list)

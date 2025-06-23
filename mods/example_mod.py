@@ -1,5 +1,4 @@
 from mods.base_mod import BlackjackMod
-from mod_loader import Utilities
 
 class ExampleMod(BlackjackMod):
     name = "Example Mod"

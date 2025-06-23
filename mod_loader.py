@@ -7,10 +7,6 @@ from collections import deque
 
 patched = False
 active_mods = []
-custom_cards = {}
-custom_actions = {}
-custom_stats = {}
-custom_config = {}
 
 def patch_engine():
     global patched
@@ -96,6 +92,8 @@ def load_mods_from_folder(folder='mods'):
                 if isinstance(obj, type) and hasattr(obj, '__bases__') and any('BlackjackMod' in str(base) for base in obj.__bases__):
                     instance = obj()
                     active_mods.append(instance)
+
+    global_registry.push_registry_to_engine(BlackjackEngine)
  
     return BlackjackEngine
 
