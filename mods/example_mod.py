@@ -11,19 +11,20 @@ class ExampleMod(BlackjackMod):
         self.dispatcher.connect('card_dealt', self.on_card_dealt)
         self.dispatcher.connect('deck_shuffled', self.on_deck_shuffle)
 
-        Utilities.register_custom_card('-2', value=-2, count_value=1)
+        self.registry.register_custom_card('-2', value=-2, count_value=1)
 
-        Utilities.register_custom_action('lucky_draw', self.draw_ace, self.can_draw_ace)
+        self.registry.register_custom_action('lucky_draw', self.draw_ace, self.can_draw_ace)
 
         print(f'ExampleMod Loaded!')
 
-    def draw_ace(engine, hand_index):
-        engine.player_hands[hand_index].cards.append("A")
+    def draw_ace(self, engineSelf, hand_index):
+        engineSelf.player_hands[hand_index].cards.append("A")
         print("💫 You magically drew an Ace!")
         return True
     
-    def can_draw_ace(engine, hand_index):
-        return len(engine.player_hands[hand_index].cards) == 2
+    def can_draw_ace(self, handSelf):
+        print('Test')
+        return len(handSelf.cards) == 2
 
     def unregister(self):
         self.dispatcher.disconnect('round_started', self.on_round_start)

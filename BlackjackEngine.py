@@ -134,7 +134,7 @@ class BlackjackGameEngine:
         self.running_count = 0
         self.bankroll = self.config.starting_bankroll
         self.player_hands: List[Hand] = []
-        self.dealer_hand: List[str] = []
+        self.dealer_hand: List[str] = [] 
         self.card_history: List[str] = []
         self.round_complete = False
         self.stats = GameStats()

@@ -1,7 +1,7 @@
 import importlib
 import os
 import BlackjackEngine
-from modding import global_dispatcher
+from modding import global_dispatcher, global_registry
 import random
 from collections import deque
 
@@ -11,27 +11,6 @@ custom_cards = {}
 custom_actions = {}
 custom_stats = {}
 custom_config = {}
-
-class CustomAction:
-    def __init__(self, name: str, handler, validator=None):
-        self.name = name
-        self.handler = handler
-        self.validator = validator or (lambda engine, hand_index: True)
-
-class Utilities:
-    def __init__(self):
-        pass
-
-    def register_custom_card(card: str, value: int, count_value: int = 0):
-        custom_cards[card] = {
-            'value': value,
-            'count_value': count_value
-        }
-        BlackjackEngine.GameConstants.CARD_VALUES[card] = value
-        BlackjackEngine.GameConstants.HI_LO_VALUES[card] = count_value
-
-    def register_custom_action(name: str, handler, validator=None):
-        custom_actions[name] = CustomAction(name, handler, validator)
 
 def patch_engine():
     global patched
@@ -67,16 +46,18 @@ def patch_engine():
 
     def patched_create_deck(num_decks: int):
         base_cards = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
-        all_cards = base_cards + list(custom_cards.keys())
+        all_cards = base_cards + list(global_registry.custom_cards.keys())
         single_deck = all_cards * 4
         final_deck = deque(single_deck * num_decks)
         global_dispatcher.emit('deck_created', results=final_deck)
         return final_deck
 
     def patched_execute_action(self, hand_index, action):
-        if action in custom_actions:
-            custom = custom_actions[action]
-            if custom.validator(self, hand_index):
+        hand = self.player_hands[hand_index]
+        print('Debug: Attempting to execute Modded Actions.')
+        if action in global_registry.custom_actions:
+            custom = global_registry.custom_actions[action]
+            if custom.validator(hand):
                 return custom.handler(self, hand_index)
             else:
                 print(f"Action '{action}' is not currently valid.")
@@ -84,9 +65,10 @@ def patch_engine():
         return original_execute_action(self, hand_index, action)
 
     def patched_get_legal_actions(self, bankroll):
+        print('Debug: Checking Modded Actions.')
         actions = original_get_legal_actions(self, bankroll)
-        for name, custom in custom_actions.items():
-            if custom.validator(self.owner_engine, self.owner_index):
+        for name, custom in global_registry.custom_actions.items():
+            if custom.validator(self):
                 actions.append(name)
         return actions
 
@@ -135,8 +117,7 @@ def unload_all_mods():
             except Exception as e:
                 print(f"Error during mod unregister: {e}")
     active_mods.clear()
-    custom_cards.clear()
-    custom_actions.clear()
+    global_registry.clear_registry()
 
 if __name__ == "__main__":
     Engine = load_mods_from_folder()
