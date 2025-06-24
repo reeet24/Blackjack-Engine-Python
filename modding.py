@@ -13,16 +13,43 @@ class Registry:
         self.custom_actions = {}
         self.custom_stats = {}
         self.custom_config = {}
+        self.engine = None
 
     def register_custom_card(self, card: str, value: int, count_value: int = 0):
         self.custom_cards[card] = {
             'value': value,
             'count_value': count_value
         }
+    
+    def register_custom_game_stat(self, name: str, base_value, value_type):
+        self.custom_stats[name] = {
+            'base_value': base_value,
+            'value_type': value_type,
+            'current_value': value_type(base_value)
+        }
+
+    def get_custom_game_stat(self, name: str):
+        stat = self.custom_stats[name]
+        if not stat:
+            print(f'Custom Stat "{name}" not registered.')
+            return None
+        else:
+            return stat
+    
+    def set_custom_game_stat(self, name: str, value):
+        stat = self.custom_stats[name]
+        if not stat:
+            print(f'Custom Stat "{name}" not registered.')
+            return None
+        else:
+            try:
+                self.custom_stats[name]['current_value'] = self.custom_stats[name]['value_type'](value)
+            except:
+                print(f'Unable to set Custom Stat "{name}" to "{value}"')
+            return self.custom_stats[name]
 
     def register_custom_action(self, name: str, handler, validator=None):
         self.custom_actions[name] = CustomAction(name, handler, validator)
-        print(self.custom_actions)
 
     def clear_registry(self):
         self.custom_cards = {}
@@ -30,10 +57,18 @@ class Registry:
         self.custom_stats = {}
         self.custom_config = {}
 
-    def push_registry_to_engine(self, BlackjackEngine):
+    def set_engine(self, engine):
+        self.engine = engine
+
+    def push_registry_to_engine(self):
+
+        if not self.engine:
+            print(f'No engine loaded.')
+            return
+
         for card, data in self.custom_cards.items():
-            BlackjackEngine.GameConstants.CARD_VALUES[card] = data['value']
-            BlackjackEngine.GameConstants.HI_LO_VALUES[card] = data['count_value']
+            self.engine.GameConstants.CARD_VALUES[card] = data['value']
+            self.engine.GameConstants.HI_LO_VALUES[card] = data['count_value']
 
 class SignalDispatcher:
     def __init__(self):

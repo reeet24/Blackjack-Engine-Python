@@ -1,7 +1,7 @@
 import random
 from collections import deque
 from typing import List, Dict, Optional, Tuple
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 import logging
  
 logging.basicConfig(level=logging.INFO)

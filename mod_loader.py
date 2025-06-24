@@ -50,7 +50,6 @@ def patch_engine():
 
     def patched_execute_action(self, hand_index, action):
         hand = self.player_hands[hand_index]
-        print('Debug: Attempting to execute Modded Actions.')
         if action in global_registry.custom_actions:
             custom = global_registry.custom_actions[action]
             if custom.validator(hand):
@@ -61,7 +60,6 @@ def patch_engine():
         return original_execute_action(self, hand_index, action)
 
     def patched_get_legal_actions(self, bankroll):
-        print('Debug: Checking Modded Actions.')
         actions = original_get_legal_actions(self, bankroll)
         for name, custom in global_registry.custom_actions.items():
             if custom.validator(self):
@@ -93,7 +91,8 @@ def load_mods_from_folder(folder='mods'):
                     instance = obj()
                     active_mods.append(instance)
 
-    global_registry.push_registry_to_engine(BlackjackEngine)
+    global_registry.set_engine(BlackjackEngine)
+    global_registry.push_registry_to_engine()
  
     return BlackjackEngine
 
