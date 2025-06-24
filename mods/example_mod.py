@@ -19,9 +19,23 @@ class ExampleMod(BlackjackMod):
         print(f'ExampleMod Loaded!')
 
     def draw_ace(self, engineSelf, hand_index):
-        engineSelf.player_hands[hand_index].cards.append("A")
-        print("💫 You magically drew an Ace!")
-        return True
+        hand_value = engineSelf.player_hands[hand_index].value()
+        values = self.registry.get_game_constants().CARD_VALUES
+        value = str(21 - hand_value)
+
+        if value in values:
+            engineSelf.deck.remove(value)
+            engineSelf.player_hands[hand_index].cards.append(value)
+            print(f"💫 You magically drew an {value}!")
+            return True
+        elif int(value) > 10:
+            engineSelf.deck.remove('A')
+            engineSelf.player_hands[hand_index].cards.append("A")
+            print(f"💫 You magically drew an Ace!")
+            return True
+        else:
+            print(f'Unable to draw card "{value}"')
+            return True
     
     def can_draw_ace(self, handSelf):
         pitty = self.registry.get_custom_game_stat('Pitty')['current_value']
@@ -50,5 +64,5 @@ class ExampleMod(BlackjackMod):
         elif results[0]['result'] == 'win':
             self.registry.set_custom_game_stat("Pitty", pitty - 1)
         elif results[0]['result'] == 'blackjack':
-            self.registry.set_custom_game_stat("Pitty", pitty - 2)
+            self.registry.set_custom_game_stat("Pitty", 0)
         print(f"ExampleMod: Round ended with results: '{results}' ")

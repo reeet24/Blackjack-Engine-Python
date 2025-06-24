@@ -47,6 +47,9 @@ class Registry:
             except:
                 print(f'Unable to set Custom Stat "{name}" to "{value}"')
             return self.custom_stats[name]
+        
+    def get_game_constants(self):
+        return self.engine.GameConstants
 
     def register_custom_action(self, name: str, handler, validator=None):
         self.custom_actions[name] = CustomAction(name, handler, validator)
