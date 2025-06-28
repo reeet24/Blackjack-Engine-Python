@@ -49,7 +49,7 @@ class Registry:
             return self.custom_stats[name]
         
     def get_game_constants(self):
-        return self.engine.GameConstants
+        return self.engine.GameConstants # type: ignore
 
     def register_custom_action(self, name: str, handler, validator=None):
         self.custom_actions[name] = CustomAction(name, handler, validator)

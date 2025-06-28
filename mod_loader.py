@@ -62,7 +62,7 @@ def patch_engine():
     def patched_get_legal_actions(self, bankroll):
         actions = original_get_legal_actions(self, bankroll)
         for name, custom in global_registry.custom_actions.items():
-            if custom.validator(self):
+            if custom.validator(self) and (name not in actions):
                 actions.append(name)
         return actions
 
@@ -124,8 +124,8 @@ if __name__ == "__main__":
     config = Engine.GameConfig(
         num_decks=1,
         starting_bankroll=1000,
-        min_bet=10,
-        max_bet=500,
+        min_bet=1,
+        max_bet=10000000,
         blackjack_payout=1.5
     )
 

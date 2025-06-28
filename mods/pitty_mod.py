@@ -1,4 +1,6 @@
 from mods.base_mod import BlackjackMod
+import random
+import math
 
 class PittyMod(BlackjackMod):
     name = "Pitty Mod"
@@ -10,9 +12,39 @@ class PittyMod(BlackjackMod):
 
         self.registry.register_custom_game_stat('Pitty', 0, int)
 
+        self.registry.register_custom_action("hit", self.hit, self.can_hit)
         self.registry.register_custom_action('lucky_draw', self.draw_ace, self.can_draw_ace)
 
         print(f'ExampleMod Loaded!')
+
+    def can_hit(self, handSelf):
+        return True
+
+    def hit(self, engineSelf, hand_index):
+        #randomSeed = random.randint(1,3)
+        pitty = self.registry.get_custom_game_stat('Pitty')['current_value'] # type: ignore
+        hand = engineSelf.player_hands[hand_index]
+        print(hand)
+        card = engineSelf.deal_card()
+        hand.cards.append(card)
+        if (hand.is_bust()):
+            hand_value = engineSelf.player_hands[hand_index].value()
+            value = (hand_value - 21) 
+            if pitty > (value ):
+                hand.cards.pop(len(hand.cards)-1)
+                hand_value = engineSelf.player_hands[hand_index].value()
+                cardValue = ((21 - hand_value))
+                if cardValue < 1:
+                    cardValue = "A"
+                card = engineSelf.deal_set_card(str(cardValue))
+                hand.cards.append(card)
+                print("I pitty you...")
+            else:
+                hand.finished = True
+        elif (hand.value == 21):
+            hand.finished = True
+
+        return True
 
     def draw_ace(self, engineSelf, hand_index):
         hand_value = engineSelf.player_hands[hand_index].value()
@@ -34,16 +66,15 @@ class PittyMod(BlackjackMod):
             return True
     
     def can_draw_ace(self, handSelf):
-        pitty = self.registry.get_custom_game_stat('Pitty')['current_value']
+        pitty = self.registry.get_custom_game_stat('Pitty')['current_value'] # type: ignore
         return (len(handSelf.cards) == 2) and (pitty >= 10)
 
     def unregister(self):
-        self.dispatcher.disconnect('round_started', self.on_round_start)
-        self.dispatcher.disconnect('card_dealt', self.on_card_dealt)
+        self.dispatcher.disconnect('round_resolved', self.on_round_resolved)
         print(f'ExampleMod Unloaded!')
     
     def on_round_resolved(self, results, engine):
-        pitty = self.registry.get_custom_game_stat('Pitty')['current_value']
+        pitty = self.registry.get_custom_game_stat('Pitty')['current_value'] # type: ignore
         if results[0]['result'] == 'bust':
             self.registry.set_custom_game_stat("Pitty", pitty + 1)
         elif results[0]['result'] == 'lose':
