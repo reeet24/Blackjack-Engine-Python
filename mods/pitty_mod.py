@@ -30,15 +30,16 @@ class PittyMod(BlackjackMod):
         if (hand.is_bust()):
             hand_value = engineSelf.player_hands[hand_index].value()
             value = (hand_value - 21) 
-            if pitty > (value ):
+            if pitty > (value):
                 hand.cards.pop(len(hand.cards)-1)
                 hand_value = engineSelf.player_hands[hand_index].value()
                 cardValue = ((21 - hand_value))
-                if cardValue < 1:
+                if cardValue < 2:
                     cardValue = "A"
                 card = engineSelf.deal_set_card(str(cardValue))
                 hand.cards.append(card)
                 print("I pitty you...")
+                hand.finished = True
             else:
                 hand.finished = True
         elif (hand.value == 21):

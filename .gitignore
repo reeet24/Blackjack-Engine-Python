@@ -1,5 +1,5 @@
 # Misc files
-mods/wildcards.py
+mods/hiddenmods/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
