@@ -21,8 +21,7 @@ A modular, extensible, object-oriented Blackjack engine written in Python, compl
 6. [Statistics & Logging](#statistics--logging)
 7. [Testing & CI](#testing--ci)
 8. [Contributing](#contributing)
-9. [Roadmap](#roadmap)
-10. [License](#license)
+9. [License](#license)
 
 ---
 
