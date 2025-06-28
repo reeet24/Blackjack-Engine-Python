@@ -1,92 +1,127 @@
+# Blackjack Engine Python
 
-# 🃏 BlackjackEngine
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![Python Version](https://img.shields.io/badge/Python-3.8%2B-blue.svg)](https://www.python.org/)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/reeet24/Blackjack-Engine-Python/ci.yml?branch=main)](https://github.com/reeet24/Blackjack-Engine-Python/actions)
 
-A modular, extensible Python blackjack engine featuring card counting, statistics tracking, legal move validation, and both CLI and programmable interfaces.
-
-## 🚀 Features
-
-- Full blackjack rules with support for:
-  - Double down, split, surrender
-  - Blackjacks with custom payouts
-  - Soft/hard hand logic
-- Card counting (Hi-Lo) with running and true count
-- Bankroll and bet validation
-- Generator-based controller for GUI, bot, or AI integration
-- Quick-play for automated strategies
-- CLI interface for local play
-- Game statistics tracking (wins, losses, pushes, profit, etc.)
+A modular, extensible, object-oriented Blackjack engine written in Python, complete with built-in card-counting, statistics tracking, legal move validation, and both CLI and programmable interfaces. Designed to serve as the backbone for bots, GUIs, AI agents, and more.
 
 ---
 
-## 🛠️ Setup
+## Table of Contents
 
-### Requirements
+1. [Key Features](#key-features)
+2. [Installation](#installation)
+3. [Quick Start](#quick-start)
 
-- Python 3.8+
-- No external dependencies (standard library only)
+   * [CLI Usage](#cli-usage)
+   * [Programmatic Usage](#programmatic-usage)
+4. [Core Concepts & Code Structure](#core-concepts--code-structure)
+5. [Modding API](#modding-api)
+6. [Statistics & Logging](#statistics--logging)
+7. [Testing & CI](#testing--ci)
+8. [Contributing](#contributing)
+9. [Roadmap](#roadmap)
+10. [License](#license)
 
-### Running the CLI
+---
+
+## Key Features
+
+* **Full Blackjack Rule Support**
+
+  * Double down, split (including resplits), surrender
+  * Customizable blackjack payouts
+  * Soft/hard hand logic and multiple deck shoe
+
+* **Card Counting (Hi-Lo)**
+
+  * Running count & true count calculations
+  * Built-in support for count-based betting strategies
+
+* **Bankroll & Bet Validation**
+
+  * Minimum/maximum bet enforcement
+  * Bankroll tracking with automated bet adjustments
+
+* **Generator-Based Controller**
+
+  * Easily drive GUIs, bots, or AI agents via a coroutine interface
+
+* **CLI Interface**
+
+  * Interactive text-based play with real-time statistics
+
+* **Quick Play Simulation**
+
+  * Fast forward mode for automated strategies
+
+* **Extensible Modding API**
+
+  * Hook into game events, register new card types, define custom actions
+
+* **Session Statistics**
+
+  * Hands played, won, lost, pushed
+  * Blackjacks, total wagered, max bankroll, profit/loss, win rate
+
+---
+
+## Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/reeet24/Blackjack-Engine-Python.git
+cd Blackjack-Engine-Python
+
+# (Optional) Create and activate a virtual environment
+python3 -m venv venv
+source venv/bin/activate   # Linux/macOS
+venv\Scripts\activate      # Windows
+```
+
+*No external dependencies* beyond Python 3.8+. Everything lives in the standard library.
+
+---
+
+## Quick Start
+
+### CLI Usage
 
 ```bash
 python BlackjackEngine.py
 ```
 
-You’ll be greeted by a text-based blackjack game with prompts to bet, make moves, and view statistics.
+The CLI will prompt you to:
 
----
+1. Place a bet
+2. Select legal actions (`hit`, `stand`, `double`, `split`, `surrender`, etc.)
+3. View running statistics at any time
 
-## 📦 Code Structure
-
-| Class                     | Description |
-|---------------------------|-------------|
-| `GameConfig`              | Game settings like decks, bets, payout, etc. |
-| `GameStats`               | Tracks session statistics |
-| `GameConstants`           | Card values, count tables, etc. |
-| `Hand`                    | Represents and manages a blackjack hand |
-| `BlackjackGameEngine`     | The core engine with dealer/player logic |
-| `BlackjackGameController` | Generator-based interface for GUIs/bots |
-| `BlackjackCLI`            | CLI-based game driver |
-
----
-
-## 🎮 How It Works
-
-1. Player places a bet.
-2. Cards are dealt to the dealer and player.
-3. The player chooses legal actions based on hand state.
-4. The dealer plays out their hand.
-5. Results are calculated, payouts distributed, and stats updated.
-
----
-
-## 🧩 Integration Options
-
-### CLI (Terminal Game)
+### Programmatic Usage
 
 ```python
-from BlackjackEngine import BlackjackCLI
+from BlackjackEngine import BlackjackGameController
 
-cli = BlackjackCLI()
-cli.play_game()
-```
-
-### Programmatic (Bot, GUI, AI)
-
-```python
 controller = BlackjackGameController()
 session = controller.game_session()
-prompt = next(session)
 
+prompt = next(session)
 while prompt['type'] != 'game_over':
     if prompt['type'] == 'bet_input':
+        # adjust based on your strategy
         prompt = session.send(100)
     elif prompt['type'] == 'action_input':
+        # choose from prompt['legal_actions']
         prompt = session.send("stand")
     else:
         prompt = next(session)
+
+# Final result returned when type == 'game_over'
+print("Session summary:", prompt['summary'])
 ```
 
-### Quick Simulation
+For quick simulations:
 
 ```python
 result = controller.quick_play(bet=50, actions=["hit", "stand"])
@@ -95,106 +130,101 @@ print(result)
 
 ---
 
-## 📊 Stats Tracked
+## Core Concepts & Code Structure
 
-- Hands played, won, lost, pushed
-- Blackjacks
-- Total wagered
-- Maximum bankroll achieved
-- Session profit/loss
-- Win rate %
-
----
-
-## 🔧 Customization
-
-- Adjust `GameConfig` to change game rules
-- Use controller’s generator loop to make your own UIs or AI agents
-- Inject mods via the modding system (below)
+| Class/Module              | Responsibility                                   |
+| ------------------------- | ------------------------------------------------ |
+| `GameConfig`              | Defines decks, payouts, bet limits, game rules   |
+| `GameStats`               | Accumulates and reports session metrics          |
+| `GameConstants`           | Card values, count tables, legal-action mappings |
+| `Hand`                    | Encapsulates a player or dealer hand             |
+| `BlackjackGameEngine`     | Core engine: deals cards, resolves rounds        |
+| `BlackjackGameController` | Generator-based interface for driving play loops |
+| `BlackjackCLI`            | Text-based command-line driver                   |
 
 ---
 
-## 🔌 Modding API
+## Modding API
 
-The Blackjack engine includes built-in support for mods, enabling you to hook into gameplay events, register new card types, and even introduce new player actions.
+Dynamically load custom “mods” to inject new behavior:
 
-### 🔧 How Modding Works
+1. **Drop** Python files into `mods/`.
 
-Mods are dynamically loaded from the `mods/` folder using the `load_mods_from_folder()` function. They can patch the engine, add new behavior, or override existing rules.
+2. **Load** them via the entry point:
 
-### 🧩 Key Concepts
+   ```python
+   from mod_loader import load_mods_from_folder
 
-- **Signals/Events** — Mods can hook into core gameplay signals like:
-  - `round_started`
-  - `card_dealt`
-  - `round_resolved`
+   Engine = load_mods_from_folder()
+   cli = Engine.BlackjackCLI(Engine.GameConfig())
+   cli.play_game()
+   ```
 
-- **Custom Cards** — Add new card faces and assign them game values:
+3. **Hooks & Events**
 
-  ```python
-  register_custom_card('🔥', value=10, count_value=-1)
-  ```
+   * `round_started`, `card_dealt`, `round_resolved`, etc.
+   * Use `register_custom_card(face, value, count_value)`
+   * Use `register_custom_action(name, handler, validator=None)`
 
-- **Custom Actions** — Register new player actions with custom handlers:
+4. **Example Mod Skeleton**
 
-  ```python
-  def handle_flip(engine, hand_index):
-      print("🃏 You flipped your cards!")
-      return True
+   ```python
+   # mods/my_flip_mod.py
+   from modding import BlackjackMod, register_custom_action
 
-  register_custom_action('flip', handler=handle_flip)
-  ```
+   class FlipMod(BlackjackMod):
+       name = "Flip-Action Mod"
+       version = "1.0"
+       description = "Adds a 'flip' action"
 
-### 📁 Example Mod Structure
+       def __init__(self):
+           register_custom_action('flip', handler=self.flip_handler)
 
-Each mod should define a class that inherits from a shared `BlackjackMod` base and registers functionality in its constructor.
+       def flip_handler(self, engine, hand_index):
+           print("You flipped your cards in frustration!")
+           return True
+   ```
 
-```python
-# mods/my_mod.py
+5. **Management**
 
-class MyFunMod(BlackjackMod):
-    name = "Fun Mod"
-    version = "1.0"
-    description = "Adds a silly action"
+   * `get_loaded_mods() → List[BlackjackMod]`
+   * `unload_all_mods()` to reset
 
-    def __init__(self):
-        register_custom_action('flip', handler=self.handle_flip)
+---
 
-    def handle_flip(self, engine, hand_index):
-        print("You flipped your cards in frustration!")
-        return True
-```
+## Statistics & Logging
 
-### 🧪 Development Flow
+* **Built-In Stats**: Tracks hands played/won/lost/pushed, blackjacks, total wagered, peak bankroll, profit/loss, win rate.
+* **Export**: Customize or extend `GameStats` to serialize to CSV/JSON for offline analysis.
+* **Visualization**: Integrate with plotting libraries to chart performance over time.
 
-1. Drop your `.py` mod files in the `mods/` folder.
-2. Call `load_mods_from_folder()` to apply patches and register content.
-3. Use `get_loaded_mods()` to see active mods.
-4. Use `unload_all_mods()` to clear everything.
+---
 
-### 🧼 Engine Patching
+## Testing & CI
 
-The following engine methods are patched during mod load:
+* **Unit Tests**: `run_tests.py` runs the test suite in `tests/`.
+* **Continuous Integration**: A GitHub Actions workflow (`.github/workflows/ci.yml`) automatically runs linting and tests on every push.
 
-- `start_round()` – emits `round_started`
-- `deal_card()` – emits `card_dealt`
-- `resolve_round()` – emits `round_resolved`
-- `create_deck()` – injects custom cards
-- `execute_action()` – supports custom actions
-- `get_legal_actions()` – adds modded actions to UI
-
-### Example Entry Point
-
-```python
-if __name__ == "__main__":
-    Engine = load_mods_from_folder()
-
-    cli = Engine.BlackjackCLI(Engine.GameConfig())
-    cli.play_game()
+```bash
+# Run all tests
+python run_tests.py
 ```
 
 ---
 
-## 📜 License
+## Contributing
 
-MIT License — free to use and modify.
+1. **Fork** the repo
+2. **Create** a feature branch (`git checkout -b feature/YourFeature`)
+3. **Commit** your changes with clear messages
+4. **Push** and **Open** a Pull Request
+5. **Review** & **Merge**
+
+Please follow [PEP 8](https://www.python.org/dev/peps/pep-0008/) style guidelines and include tests for new functionality.
+
+---
+
+## License
+
+This project is released under the **MIT License**. See [LICENSE](LICENSE) for full terms.
+Feel free to fork, modify, and extend for your own Blackjack experiments and projects.
