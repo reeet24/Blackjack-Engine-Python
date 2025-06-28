@@ -169,7 +169,7 @@ Dynamically load custom “mods” to inject new behavior:
 
    ```python
    # mods/my_flip_mod.py
-   from modding import BlackjackMod, register_custom_action
+   from modding import BlackjackMod
 
    class FlipMod(BlackjackMod):
        name = "Flip-Action Mod"
@@ -177,7 +177,7 @@ Dynamically load custom “mods” to inject new behavior:
        description = "Adds a 'flip' action"
 
        def __init__(self):
-           register_custom_action('flip', handler=self.flip_handler)
+           self.registry.register_custom_action('flip', handler=self.flip_handler)
 
        def flip_handler(self, engine, hand_index):
            print("You flipped your cards in frustration!")
