@@ -100,8 +100,12 @@ class BlackjackModloader:
     """Handles loading and managing mods for the blackjack game."""
     
     def __init__(self, folder: str):
+        global global_dispatcher, global_registry
         self.folder = folder
         self.active_mods = []
+        self.engine = self.patch_engine()
+        global_dispatcher.register_engine(self.engine)
+        global_registry.register_engine(self.engine)
         self.load_mods_from_folder(folder)
 
     def patch_engine(self):
@@ -261,21 +265,17 @@ class BlackjackModloader:
 
 if __name__ == "__main__":
 
-    modloader = BlackjackModloader('modsNew')
-    patched_engine = modloader.patch_engine()
-    global_dispatcher.register_engine(patched_engine)
-    global_registry.register_engine(patched_engine)
-    global_registry.push_registry_to_engine()
+    modloader = BlackjackModloader("mods")
     print(patched)
 
-    if not patched_engine:
+    if not modloader.engine:
         raise Exception("Failed to patch engine")
 
-    print(patched_engine.GameConstants.CARD_VALUES)
-    print(patched_engine.GameConstants.HI_LO_VALUES)
+    print(modloader.engine.GameConstants.CARD_VALUES)
+    print(modloader.engine.GameConstants.HI_LO_VALUES)
     print("Loaded mods:", modloader.get_loaded_mods())
 
-    config = patched_engine.GameConfig(
+    config = modloader.engine.GameConfig(
         num_decks=1,
         starting_bankroll=1000,
         min_bet=1,
@@ -283,5 +283,5 @@ if __name__ == "__main__":
         blackjack_payout=1.5
     )
 
-    cli = patched_engine.BlackjackCLI(config)
+    cli = modloader.engine.BlackjackCLI(config)
     cli.play_game()
