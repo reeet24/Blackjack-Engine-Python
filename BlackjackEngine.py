@@ -1,14 +1,16 @@
 import random
-from collections import deque
-from typing import List, Dict, Optional, Tuple
+from collections import deque, defaultdict
+from typing import List, Dict, Optional, Tuple, Callable, ClassVar
 from dataclasses import dataclass, field
 import logging
  
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+patched = False
+
 @dataclass
-class GameConfig:
+class _GameConfig:
     """Configuration settings for the blackjack game."""
     num_decks: int = 6
     starting_bankroll: int = 500
@@ -18,7 +20,7 @@ class GameConfig:
     min_cards_before_shuffle: int = 15
 
 @dataclass
-class GameStats:
+class _GameStats:
     """Statistics tracking for game performance."""
     hands_played: int = 0
     hands_won: int = 0
@@ -29,7 +31,7 @@ class GameStats:
     max_bankroll: int = 0
     current_session_profit: int = 0
 
-class GameConstants:
+class _GameConstants:
     """Constants used throughout the game."""
     CARD_VALUES = {
         '2': 2, '3': 3, '4': 4, '5': 5, '6': 6,
@@ -42,9 +44,30 @@ class GameConstants:
         '7': 0, '8': 0, '9': 0,
         '10': -1, 'J': -1, 'Q': -1, 'K': -1, 'A': -1
     }
+
+    SUITES = {
+        'Hearts': '♥', 'Diamonds': '♦', 'Clubs': '♣', 'Spades': '♠'
+    }
     
     CARDS_PER_DECK = 52
     SOFT_17_THRESHOLD = 17
+
+    def AddCard(self, Identifier: str, value: int, count_value: int):
+        self.CARD_VALUES[Identifier] = value
+        self.HI_LO_VALUES[Identifier] = count_value
+        self.CARDS_PER_DECK += len(self.SUITES.keys())
+
+
+
+GameConfig = _GameConfig
+GameStats = _GameStats
+GameConstants = _GameConstants()
+
+class CustomAction:
+    def __init__(self, name: str, handler, validator=None):
+        self.name = name
+        self.handler = handler
+        self.validator = validator or (lambda engine, hand_index: True)
 
 def create_deck(num_decks: int) -> deque:
     """Create a shuffled deck with the specified number of standard decks."""
@@ -728,6 +751,26 @@ class BlackjackCLI:
             except ValueError:
                 print("❌ Please enter a valid number")
 
+    def print_statistics(self) -> None:
+        '''Prints the game's statistics'''
+
+        stats = self.controller.engine.stats
+        print(f"\n{'='*50}")
+        print("📊 FINAL STATISTICS:")
+        print(f"Final bankroll: ${self.controller.engine.bankroll}")
+        print(f"Session profit/loss: ${stats.current_session_profit}")
+        print(f"Hands played: {stats.hands_played}")
+        print(f"Hands won: {stats.hands_won}")
+        print(f"Hands lost: {stats.hands_lost}")
+        print(f"Hands pushed: {stats.hands_pushed}")
+        print(f"Blackjacks: {stats.blackjacks}")
+        print(f"Total wagered: ${stats.total_wagered}")
+        print(f"Max bankroll reached: ${stats.max_bankroll}")
+        
+        if stats.hands_played > 0:
+            win_rate = (stats.hands_won / stats.hands_played) * 100
+            print(f"Win rate: {win_rate:.1f}%")
+
     def play_game(self) -> None:
         """Main game loop using the controller."""
         print("🎲 Welcome to Blackjack with Card Counting!")
@@ -799,32 +842,4 @@ class BlackjackCLI:
             pass
         
  
-        stats = self.controller.engine.stats
-        print(f"\n{'='*50}")
-        print("📊 FINAL STATISTICS:")
-        print(f"Final bankroll: ${self.controller.engine.bankroll}")
-        print(f"Session profit/loss: ${stats.current_session_profit}")
-        print(f"Hands played: {stats.hands_played}")
-        print(f"Hands won: {stats.hands_won}")
-        print(f"Hands lost: {stats.hands_lost}")
-        print(f"Hands pushed: {stats.hands_pushed}")
-        print(f"Blackjacks: {stats.blackjacks}")
-        print(f"Total wagered: ${stats.total_wagered}")
-        print(f"Max bankroll reached: ${stats.max_bankroll}")
-        
-        if stats.hands_played > 0:
-            win_rate = (stats.hands_won / stats.hands_played) * 100
-            print(f"Win rate: {win_rate:.1f}%")
-
-if __name__ == "__main__":
-
-    config = GameConfig(
-        num_decks=6,
-        starting_bankroll=1000,
-        min_bet=10,
-        max_bet=500,
-        blackjack_payout=1.5
-    )
-
-    cli = BlackjackCLI(config)
-    cli.play_game()
+        self.print_statistics()

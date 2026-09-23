@@ -2,10 +2,11 @@ from mods.base_mod import BlackjackMod
 import random
 import math
 
-class PittyMod(BlackjackMod):
+class pitty_mod(BlackjackMod):
     name = "Pitty Mod"
     version = "1.0.0"
     description = "An example mod template."
+    BlackjackMod = BlackjackMod
 
     def register(self):
         self.dispatcher.connect('round_resolved', self.on_round_resolved)
@@ -15,7 +16,7 @@ class PittyMod(BlackjackMod):
         self.registry.register_custom_action("hit", self.hit, self.can_hit)
         self.registry.register_custom_action('lucky_draw', self.draw_ace, self.can_draw_ace)
 
-        print(f'ExampleMod Loaded!')
+        print(f'Pitty mod Loaded!')
 
     def can_hit(self, handSelf):
         return True

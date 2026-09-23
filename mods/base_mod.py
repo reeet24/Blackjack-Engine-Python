@@ -1,11 +1,9 @@
-from modding import global_dispatcher, global_registry
-
 class BlackjackMod:
     name = "Unnamed Mod"
     version = "0.0.1"
     description = "No description provided."
 
-    def __init__(self):
+    def __init__(self, global_dispatcher, global_registry):
         self.dispatcher = global_dispatcher
         self.registry = global_registry
         self.register()
